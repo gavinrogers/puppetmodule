@@ -121,23 +121,24 @@ class puppet::master (
     }
   }
   case $webserver {
-  httpd: {
-    Anchor['puppet::master::begin'] ->
-    class {'puppet::passenger':
-      puppet_passenger_port  => $puppet_passenger_port,
-      puppet_docroot         => $puppet_docroot,
-      apache_serveradmin     => $apache_serveradmin,
-      puppet_conf            => $::puppet::params::puppet_conf,
-      puppet_ssldir          => $puppet_ssldir,
-      certname               => $certname,
-      conf_dir               => $::puppet::params::confdir,
-      dns_alt_names          => join($dns_alt_names,','),
-    } ->
-    Anchor['puppet::master::end']
-  }
-  nginx: {
-    Anchor['puppet::master::begin'] ->
-      class {'puppet::unicorn':}
+    httpd: {
+      Anchor['puppet::master::begin'] ->
+      class {'puppet::passenger':
+        puppet_passenger_port  => $puppet_passenger_port,
+        puppet_docroot         => $puppet_docroot,
+        apache_serveradmin     => $apache_serveradmin,
+        puppet_conf            => $::puppet::params::puppet_conf,
+        puppet_ssldir          => $puppet_ssldir,
+        certname               => $certname,
+        conf_dir               => $::puppet::params::confdir,
+        dns_alt_names          => join($dns_alt_names,','),
+      } ->
+      Anchor['puppet::master::end']
+    }
+    nginx: {
+      Anchor['puppet::master::begin'] ->
+        class {'puppet::unicorn':}
+    }
   }
   service { $puppet_master_service:
     ensure    => stopped,
