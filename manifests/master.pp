@@ -84,7 +84,7 @@ class puppet::master (
   $puppetdb_strict_validation = $::puppet::params::puppetdb_strict_validation,
   $dns_alt_names              = ['puppet'],
   $digest_algorithm           = $::puppet::params::digest_algorithm,
-  $manage_webserver           = false,
+  $manage_webserver           = undef,
 ) inherits puppet::params {
 
   anchor { 'puppet::master::begin': }
@@ -120,7 +120,7 @@ class puppet::master (
       ensure         => $version,
     }
   }
-  if $manage_webserver != false {
+  if $manage_webserver != undef {
   Anchor['puppet::master::begin'] ->
     class {'puppet::passenger':
       puppet_passenger_port  => $puppet_passenger_port,
@@ -147,7 +147,7 @@ class puppet::master (
       require => File[$::puppet::params::confdir],
       owner   => $::puppet::params::puppet_user,
       group   => $::puppet::params::puppet_group,
-      notify  => Service['httpd'],
+      notify  => Service[$manage_webserver],
     }
   }
   else {
