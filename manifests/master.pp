@@ -147,7 +147,11 @@ class puppet::master (
       require => File[$::puppet::params::confdir],
       owner   => $::puppet::params::puppet_user,
       group   => $::puppet::params::puppet_group,
-      notify  => Service[$webserver],
+    }
+    if $webserver != undef {
+      file { $::puppet::params::puppet_conf:
+        notify  => Service['httpd'],
+      }
     }
   }
   else {
