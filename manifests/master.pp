@@ -32,6 +32,7 @@
 #  ['puppetdb_startup_timeout'] - The timeout for puppetdb
 #  ['dns_alt_names']            - Comma separated list of alternative DNS names
 #  ['digest_algorithm']         - The algorithm to use for file digests.
+#  ['manage_webserver']         - if undef we won't install any webserver in front of puppet
 #
 # Requires:
 #
@@ -83,6 +84,7 @@ class puppet::master (
   $puppetdb_strict_validation = $::puppet::params::puppetdb_strict_validation,
   $dns_alt_names              = ['puppet'],
   $digest_algorithm           = $::puppet::params::digest_algorithm,
+  $manage_webserver           = false,
 ) inherits puppet::params {
 
   anchor { 'puppet::master::begin': }
@@ -118,20 +120,20 @@ class puppet::master (
       ensure         => $version,
     }
   }
-
+  if $manage_webserver != false {
   Anchor['puppet::master::begin'] ->
-  class {'puppet::passenger':
-    puppet_passenger_port  => $puppet_passenger_port,
-    puppet_docroot         => $puppet_docroot,
-    apache_serveradmin     => $apache_serveradmin,
-    puppet_conf            => $::puppet::params::puppet_conf,
-    puppet_ssldir          => $puppet_ssldir,
-    certname               => $certname,
-    conf_dir               => $::puppet::params::confdir,
-    dns_alt_names          => join($dns_alt_names,','),
-  } ->
+    class {'puppet::passenger':
+      puppet_passenger_port  => $puppet_passenger_port,
+      puppet_docroot         => $puppet_docroot,
+      apache_serveradmin     => $apache_serveradmin,
+      puppet_conf            => $::puppet::params::puppet_conf,
+      puppet_ssldir          => $puppet_ssldir,
+      certname               => $certname,
+      conf_dir               => $::puppet::params::confdir,
+      dns_alt_names          => join($dns_alt_names,','),
+    } ->
   Anchor['puppet::master::end']
-
+  }
   service { $puppet_master_service:
     ensure    => stopped,
     enable    => false,
