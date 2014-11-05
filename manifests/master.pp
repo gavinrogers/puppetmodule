@@ -32,7 +32,7 @@
 #  ['puppetdb_startup_timeout'] - The timeout for puppetdb
 #  ['dns_alt_names']            - Comma separated list of alternative DNS names
 #  ['digest_algorithm']         - The algorithm to use for file digests.
-#  ['webserver']                - no webserver if undef, otherwise httpd
+#  ['webserver']                - install 'nginx' (with unicorn) or 'httpd' (with passanger)
 #
 # Requires:
 #
@@ -84,7 +84,7 @@ class puppet::master (
   $puppetdb_strict_validation = $::puppet::params::puppetdb_strict_validation,
   $dns_alt_names              = ['puppet'],
   $digest_algorithm           = $::puppet::params::digest_algorithm,
-  $webserver           = undef,
+  $webserver                  = 'httpd',
 ) inherits puppet::params {
 
   anchor { 'puppet::master::begin': }
@@ -120,8 +120,9 @@ class puppet::master (
       ensure         => $version,
     }
   }
-  if $webserver != undef {
-  Anchor['puppet::master::begin'] ->
+  case $webserver {
+  httpd: {
+    Anchor['puppet::master::begin'] ->
     class {'puppet::passenger':
       puppet_passenger_port  => $puppet_passenger_port,
       puppet_docroot         => $puppet_docroot,
@@ -132,7 +133,11 @@ class puppet::master (
       conf_dir               => $::puppet::params::confdir,
       dns_alt_names          => join($dns_alt_names,','),
     } ->
-  Anchor['puppet::master::end']
+    Anchor['puppet::master::end']
+  }
+  nginx: {
+    Anchor['puppet::master::begin'] ->
+      class {'puppet::unicorn':}
   }
   service { $puppet_master_service:
     ensure    => stopped,
@@ -147,11 +152,7 @@ class puppet::master (
       require => File[$::puppet::params::confdir],
       owner   => $::puppet::params::puppet_user,
       group   => $::puppet::params::puppet_group,
-    }
-    if $webserver != undef {
-      file { $::puppet::params::puppet_conf:
-        notify  => Service['httpd'],
-      }
+      notify  => Service[$webserver],
     }
   }
   else {
