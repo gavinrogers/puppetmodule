@@ -10,6 +10,11 @@ describe 'puppet::repo::puppetlabs', :type => :class do
         :lsbdistid       => 'Ubuntu'
       }
     end
+    let :params do
+      {
+        :mirror => 'http://apt.puppetlabs.com',
+      }
+    end
     it 'should contain puppetlabs apt repos' do
       should contain_apt__source('puppetlabs').with(
         :repos      => 'main',
@@ -29,6 +34,12 @@ describe 'puppet::repo::puppetlabs', :type => :class do
       {
         :osfamily        => 'Redhat',
         :operatingsystem => 'Redhat'
+      }
+    end
+    let :params do
+      {
+        :mirror   => 'http://yum.puppetlabs.com',
+        :priority => '1',
       }
     end
     it 'should add the redhat specific repoos' do

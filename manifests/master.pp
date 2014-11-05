@@ -22,7 +22,7 @@
 #  ['puppet_ssldir']            - Puppet sll directory
 #  ['puppet_docroot']           - Doc root to be configured in apache vhost
 #  ['puppet_vardir']            - Vardir used by puppet
-#  ['puppet_passenger_port']    - Port to configure passenger on default 8140
+#  ['puppet_proxy_port']        - Port to configure the proxy on - default 8140
 #  ['puppet_master_package']    - Puppet master package
 #  ['puppet_master_service']    - Puppet master service
 #  ['version']                  - Version of the puppet master package to install
@@ -32,7 +32,8 @@
 #  ['puppetdb_startup_timeout'] - The timeout for puppetdb
 #  ['dns_alt_names']            - Comma separated list of alternative DNS names
 #  ['digest_algorithm']         - The algorithm to use for file digests.
-#  ['webserver']                - install 'nginx' (with unicorn) or 'httpd' (with passanger)
+#  ['webserver']                - install 'nginx' (with unicorn) or 'httpd' (with passenger) - httpd is default
+#  ['listen_address']           - IP for binding the webserver, defaults to *
 #
 # Requires:
 #
@@ -73,7 +74,7 @@ class puppet::master (
   $puppet_ssldir              = $::puppet::params::puppet_ssldir,
   $puppet_docroot             = $::puppet::params::puppet_docroot,
   $puppet_vardir              = $::puppet::params::puppet_vardir,
-  $puppet_passenger_port      = $::puppet::params::puppet_passenger_port,
+  $puppet_proxy_port          = $::puppet::params::puppet_proy_port,
   $puppet_master_package      = $::puppet::params::puppet_master_package,
   $puppet_master_service      = $::puppet::params::puppet_master_service,
   $version                    = 'present',
@@ -84,12 +85,8 @@ class puppet::master (
   $puppetdb_strict_validation = $::puppet::params::puppetdb_strict_validation,
   $dns_alt_names              = ['puppet'],
   $digest_algorithm           = $::puppet::params::digest_algorithm,
-<<<<<<< HEAD
-  $webserver                  = 'httpd',
-  $manage_webserver           = false,
-=======
-  $manage_webserver           = undef,
->>>>>>> trying to remove service[http] deps
+  $webserver                  = $::puppet::params::default_webserver,
+  $listen_address             = $::puppet::params::listen_address,
 ) inherits puppet::params {
 
   anchor { 'puppet::master::begin': }
@@ -126,25 +123,29 @@ class puppet::master (
     }
   }
   case $webserver {
-    httpd: {
+    nginx: {
       Anchor['puppet::master::begin'] ->
-      class {'puppet::passenger':
-        puppet_passenger_port  => $puppet_passenger_port,
-        puppet_docroot         => $puppet_docroot,
-        apache_serveradmin     => $apache_serveradmin,
-        puppet_conf            => $::puppet::params::puppet_conf,
-        puppet_ssldir          => $puppet_ssldir,
-        certname               => $certname,
-        conf_dir               => $::puppet::params::confdir,
-        dns_alt_names          => join($dns_alt_names,','),
+      class {'puppet::unicorn':
+        listen_address    => $listen_address,
+        puppet_proxy_port => $puppet_proxy_port,
       } ->
       Anchor['puppet::master::end']
     }
-    nginx: {
+    default: {
       Anchor['puppet::master::begin'] ->
-      class {'puppet::unicorn':} ->
+      class {'puppet::passenger':
+        puppet_proxy_port   => $puppet_proxy_port,
+        puppet_docroot      => $puppet_docroot,
+        apache_serveradmin  => $apache_serveradmin,
+        puppet_conf         => $::puppet::params::puppet_conf,
+        puppet_ssldir       => $puppet_ssldir,
+        certname            => $certname,
+        conf_dir            => $::puppet::params::confdir,
+        dns_alt_names       => join($dns_alt_names,','),
+      } ->
       Anchor['puppet::master::end']
     }
+
   }
   service { $puppet_master_service:
     ensure    => stopped,

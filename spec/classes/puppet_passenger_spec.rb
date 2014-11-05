@@ -3,7 +3,7 @@ require 'spec_helper'
 describe 'puppet::passenger', :type => :class do
       let (:params) do
             {
-                :puppet_passenger_port  => '8140',
+                :puppet_proxy_port  => '8140',
                 :puppet_docroot         => '/etc/puppet/rack/public/',
                 :apache_serveradmin     => 'root',
                 :puppet_conf            => '/etc/puppet/puppet.conf',

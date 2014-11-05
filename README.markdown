@@ -52,6 +52,13 @@ Puppet 3.5 introduced a new way of handling Puppet environments known as _Direct
 
 Optionally, an `environmentpath` parameter can be supplied to configure the base root of Puppet environments, this defaults to `$confdir/environments`
 
+### Support for httpd and nginx ###
+
+    class { 'puppet::master':
+      webserver => 'nginx'
+    }
+
+The default installed webserver is httpd with passenger, but via the webserver param you can switch to nginx with unicorn (nginx is currently only tested on centos7, testers are welcome)
 
 ## Agent ##
     class { 'puppet::agent':

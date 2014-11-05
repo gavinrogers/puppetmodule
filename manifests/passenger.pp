@@ -3,7 +3,7 @@
 # This class installs and configures the puppetdb terminus pacakge
 #
 # Parameters:
-#   ['puppet_passenger_port']    - The port for the virtual host
+#   ['puppet_proxy_port']    - The port for the virtual host
 #   ['puppet_docroot']           - Apache documnet root
 #   ['apache_serveradmin']       - The apache server admin
 #   ['puppet_conf']              - The puppet config dir
@@ -21,17 +21,17 @@
 #
 # Sample Usage:
 #   class { 'puppet::passenger':
-#           puppet_passenger_port  => 8140,
-#           puppet_docroot         => '/etc/puppet/docroot',
-#           apache_serveradmin     => 'wibble',
-#           puppet_conf            => '/etc/puppet/puppet.conf',
-#           puppet_ssldir          => '/var/lib/puppet/ssl',
-#           certname               => 'puppet.example.com',
-#           conf_dir               => '/etc/puppet',
+#           puppet_proxyr_port  => 8140,
+#           puppet_docroot      => '/etc/puppet/docroot',
+#           apache_serveradmin  => 'wibble',
+#           puppet_conf         => '/etc/puppet/puppet.conf',
+#           puppet_ssldir       => '/var/lib/puppet/ssl',
+#           certname            => 'puppet.example.com',
+#           conf_dir            => '/etc/puppet',
 #   }
 #
 class puppet::passenger(
-  $puppet_passenger_port,
+  $puppet_proxy_port,
   $puppet_docroot,
   $apache_serveradmin,
   $puppet_conf,
@@ -99,7 +99,7 @@ class puppet::passenger(
   }
 
   apache::vhost { "puppet-${certname}":
-    port              => $puppet_passenger_port,
+    port              => $puppet_proxy_port,
     priority          => '40',
     docroot           => $puppet_docroot,
     serveradmin       => $apache_serveradmin,
