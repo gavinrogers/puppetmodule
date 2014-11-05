@@ -32,7 +32,7 @@
 #  ['puppetdb_startup_timeout'] - The timeout for puppetdb
 #  ['dns_alt_names']            - Comma separated list of alternative DNS names
 #  ['digest_algorithm']         - The algorithm to use for file digests.
-#  ['manage_webserver']         - if undef we won't install any webserver in front of puppet
+#  ['webserver']                - no webserver if undef, otherwise httpd
 #
 # Requires:
 #
@@ -84,7 +84,7 @@ class puppet::master (
   $puppetdb_strict_validation = $::puppet::params::puppetdb_strict_validation,
   $dns_alt_names              = ['puppet'],
   $digest_algorithm           = $::puppet::params::digest_algorithm,
-  $manage_webserver           = undef,
+  $webserver           = undef,
 ) inherits puppet::params {
 
   anchor { 'puppet::master::begin': }
@@ -120,7 +120,7 @@ class puppet::master (
       ensure         => $version,
     }
   }
-  if $manage_webserver != undef {
+  if $webserver != undef {
   Anchor['puppet::master::begin'] ->
     class {'puppet::passenger':
       puppet_passenger_port  => $puppet_passenger_port,
@@ -147,12 +147,12 @@ class puppet::master (
       require => File[$::puppet::params::confdir],
       owner   => $::puppet::params::puppet_user,
       group   => $::puppet::params::puppet_group,
-      notify  => Service[$manage_webserver],
+      notify  => Service[$webserver],
     }
   }
   else {
     File<| title == $::puppet::params::puppet_conf |> {
-      notify  => Service['httpd'],
+      notify  => Service[$webserver],
     }
   }
 
@@ -163,12 +163,12 @@ class puppet::master (
       require => Package[$puppet_master_package],
       owner   => $::puppet::params::puppet_user,
       group   => $::puppet::params::puppet_group,
-      notify  => Service['httpd'],
+      notify  => Service[$webserver],
     }
   }
   else {
     File<| title == $::puppet::params::confdir |> {
-      notify  +> Service['httpd'],
+      notify  +> Service[$webserver],
       require +> Package[$puppet_master_package],
     }
   }
@@ -177,7 +177,7 @@ class puppet::master (
     ensure       => directory,
     owner        => $::puppet::params::puppet_user,
     group        => $::puppet::params::puppet_group,
-    notify       => Service['httpd'],
+    notify       => Service[$webserver],
     require      => Package[$puppet_master_package]
   }
 
@@ -186,7 +186,7 @@ class puppet::master (
     class { 'puppet::storeconfigs':
       dbserver                   => $storeconfigs_dbserver,
       dbport                     => $storeconfigs_dbport,
-      puppet_service             => Service['httpd'],
+      puppet_service             => Service[$webserver],
       puppet_confdir             => $::puppet::params::puppet_confdir,
       puppet_conf                => $::puppet::params::puppet_conf,
       puppet_master_package      => $puppet_master_package,
@@ -199,7 +199,7 @@ class puppet::master (
   Ini_setting {
       path    => $::puppet::params::puppet_conf,
       require => File[$::puppet::params::puppet_conf],
-      notify  => Service['httpd'],
+      notify  => Service[$webserver],
       section => 'master',
   }
 
