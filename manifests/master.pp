@@ -84,7 +84,12 @@ class puppet::master (
   $puppetdb_strict_validation = $::puppet::params::puppetdb_strict_validation,
   $dns_alt_names              = ['puppet'],
   $digest_algorithm           = $::puppet::params::digest_algorithm,
+<<<<<<< HEAD
   $webserver                  = 'httpd',
+  $manage_webserver           = false,
+=======
+  $manage_webserver           = undef,
+>>>>>>> trying to remove service[http] deps
 ) inherits puppet::params {
 
   anchor { 'puppet::master::begin': }
