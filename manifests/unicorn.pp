@@ -36,7 +36,7 @@ class puppet::unicorn () {
   # hacky vhost
   file {'puppetmaster-vhost':
     path    => '/etc/nginx/sites-available/puppetmaster',
-    source  => 'puppet:///modules/puppet/puppetmaster',
+    source  => 'puppet:///templates/puppet/puppetmaster',
   } ->
   file {'enable-puppetmaster-vhost':
     path    => '/etc/nginx/sites-enabled/puppetmaster',

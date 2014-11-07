@@ -6,8 +6,8 @@ upstream puppetmaster_unicorn {
 # define our proxy for breaking up SSL
 server {
   ssl on; 
-  ssl_certificate /var/lib/puppet/ssl/certs/puppet.vps.hosteurope.de.pem;
-  ssl_certificate_key /var/lib/puppet/ssl/private_keys/puppet.vps.hosteurope.de.pem;
+  ssl_certificate /var/lib/puppet/ssl/certs/<%= @fqdn %>.pem;
+  ssl_certificate_key /var/lib/puppet/ssl/private_keys/<%= @fqdn %>.pem;
   ssl_verify_client optional;
   ssl_client_certificate /var/lib/puppet/ssl/ca/ca_crt.pem;
   ssl_protocols TLSv1.2;
