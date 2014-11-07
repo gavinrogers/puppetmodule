@@ -1,0 +1,32 @@
+# define the new unicorn backend
+upstream puppetmaster_unicorn {
+  server unix:/var/run/puppet/puppetmaster_unicorn.sock fail_timeout=0;
+}
+
+# define our proxy for breaking up SSL
+server {
+  ssl on; 
+  ssl_certificate /var/lib/puppet/ssl/certs/puppet.vps.hosteurope.de.pem;
+  ssl_certificate_key /var/lib/puppet/ssl/private_keys/puppet.vps.hosteurope.de.pem;
+  ssl_verify_client optional;
+  ssl_client_certificate /var/lib/puppet/ssl/ca/ca_crt.pem;
+  ssl_protocols TLSv1.2;
+  ssl_ciphers 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH:+CAMELLIA256:+AES256:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!ECDSA:CAMELLIA256-SHA:AES256-SHA:CAMELLIA128-SHA:AES128-SHA';
+  proxy_set_header    Host            $host;
+  proxy_set_header    X-Real-IP       $remote_addr;
+  proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header    X-Scheme        $scheme;
+  proxy_set_header    X-Client-Verify $ssl_client_verify;
+  proxy_set_header    X-Client-DN     $ssl_client_s_dn;
+  proxy_set_header    X-SSL-Subject   $ssl_client_s_dn;
+  proxy_set_header    X-SSL-Issuer    $ssl_client_i_dn;
+  listen 10.111.2.250:8140 ssl;
+  root /var/empty;
+  location / { 
+    proxy_pass http://puppetmaster_unicorn;
+    proxy_redirect off;
+  }
+  access_log /var/log/nginx/puppetmaster-access.log;
+  error_log  /var/log/nginx/puppetmaster-error.log;
+}
+
