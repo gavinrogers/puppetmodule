@@ -23,7 +23,7 @@ class puppet::unicorn () {
     notify  => Exec['systemd-reload'],
   }
   exec{'systemd-reload':
-    exec        => 'systemctl daemon-reload',
+    command     => '/usr/bin/systemctl daemon-reload',
     refreshonly => 'true',
     notify      => Service['unicorn-puppetmaster'],
   }
@@ -36,7 +36,7 @@ class puppet::unicorn () {
   # hacky vhost
   file {'puppetmaster-vhost':
     path    => '/etc/nginx/sites-available/puppetmaster',
-    source  => 'puppet:///puppet/puppetmaster',
+    source  => 'puppet:///modules/puppet/puppetmaster',
   } ->
   file {'enable-puppetmaster-vhost':
     path    => '/etc/nginx/sites-enabled/puppetmaster',
