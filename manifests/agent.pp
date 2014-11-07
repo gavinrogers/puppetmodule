@@ -146,7 +146,7 @@ class puppet::agent(
       $service_enable = undef
     }
     default: {
-      err 'Unsupported puppet run style in Class[\'puppet::agent\']'
+      err('Unsupported puppet run style in Class[\'puppet::agent\']')
     }
   }
 
