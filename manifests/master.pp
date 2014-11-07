@@ -32,7 +32,7 @@
 #  ['puppetdb_startup_timeout'] - The timeout for puppetdb
 #  ['dns_alt_names']            - Comma separated list of alternative DNS names
 #  ['digest_algorithm']         - The algorithm to use for file digests.
-#  ['webserver']                - install 'nginx' (with unicorn) or 'httpd' (with passanger)
+#  ['webserver']                - install 'nginx' (with unicorn) or 'httpd' (with passenger)
 #
 # Requires:
 #
