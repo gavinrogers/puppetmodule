@@ -137,7 +137,8 @@ class puppet::master (
     }
     nginx: {
       Anchor['puppet::master::begin'] ->
-        class {'puppet::unicorn':}
+      class {'puppet::unicorn':} ->
+      Anchor['puppet::master::end']
     }
   }
   service { $puppet_master_service:

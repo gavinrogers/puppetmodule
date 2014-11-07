@@ -1,0 +1,14 @@
+[Unit]
+Description=Puppet master served by Unicorn
+
+[Service]
+ExecStart=/usr/local/bin/unicorn -c /etc/puppet/unicorn.conf
+ExecReload=/usr/bin/kill -s HUP $MAINPID
+PrivateTmp=yes
+# this would be cool, but then the puppetmaster can't reach the puppetdb
+#PrivateNetwork=yes
+User=puppet
+Group=puppet
+
+[Install]
+WantedBy=multi-user.target
