@@ -121,7 +121,12 @@ class puppet::master (
     }
   }
   case $webserver {
-    httpd: {
+    nginx: {
+      Anchor['puppet::master::begin'] ->
+      class {'puppet::unicorn':} ->
+      Anchor['puppet::master::end']
+    }
+    default: {
       Anchor['puppet::master::begin'] ->
       class {'puppet::passenger':
         puppet_passenger_port  => $puppet_passenger_port,
@@ -135,11 +140,7 @@ class puppet::master (
       } ->
       Anchor['puppet::master::end']
     }
-    nginx: {
-      Anchor['puppet::master::begin'] ->
-      class {'puppet::unicorn':} ->
-      Anchor['puppet::master::end']
-    }
+
   }
   service { $puppet_master_service:
     ensure    => stopped,

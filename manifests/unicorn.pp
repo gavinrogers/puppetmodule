@@ -24,7 +24,7 @@ class puppet::unicorn () {
   }
   exec{'systemd-reload':
     command     => '/usr/bin/systemctl daemon-reload',
-    refreshonly => 'true',
+    refreshonly => true,
     notify      => Service['unicorn-puppetmaster'],
   }
   unless defined(Service['unicorn-puppetmaster']) {
@@ -39,8 +39,8 @@ class puppet::unicorn () {
     content => template('puppet/puppetmaster'),
   } ->
   file {'enable-puppetmaster-vhost':
-    path    => '/etc/nginx/sites-enabled/puppetmaster',
     ensure  => 'link',
+    path    => '/etc/nginx/sites-enabled/puppetmaster',
     target  => '/etc/nginx/sites-available/puppetmaster',
     notify  => Service['nginx'],
   }
