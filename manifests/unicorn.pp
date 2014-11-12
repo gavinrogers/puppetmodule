@@ -4,6 +4,9 @@
 class puppet::unicorn () {
   include nginx
   # install unicorn
+  package {'gcc':
+    ensure  => 'latest',
+  } ->
   package {'ruby-devel':
     ensure  => 'latest',
   } ->
