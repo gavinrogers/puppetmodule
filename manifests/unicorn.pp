@@ -4,6 +4,9 @@
 class puppet::unicorn () {
   include nginx
   # install unicorn
+  package {'gcc':
+    ensure  => 'latest',
+  } ->
   package {'ruby-devel':
     ensure  => 'latest',
   } ->
@@ -33,7 +36,7 @@ class puppet::unicorn () {
   unless defined(Service['unicorn-puppetmaster']) {
     service{'unicorn-puppetmaster':
       ensure  => 'running',
-      enable  => 'enable',
+      enable  => 'true',
     }
   }
   # hacky vhost
