@@ -4,7 +4,7 @@
 class puppet::unicorn () {
   include nginx
   # install unicorn
-  package {'ruby-libs':
+  package {'ruby-devel':
     ensure  => 'latest',
   } ->
   package {['unicorn', 'rack']:
