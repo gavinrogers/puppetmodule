@@ -53,7 +53,7 @@ class puppet::unicorn () {
   unless defined(Service['nginx']) {
     service{'nginx':
       ensure  => 'running',
-      enable  => 'enable',
+      enable  => true,
     }
   }
 }
