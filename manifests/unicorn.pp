@@ -36,7 +36,7 @@ class puppet::unicorn () {
   unless defined(Service['unicorn-puppetmaster']) {
     service{'unicorn-puppetmaster':
       ensure  => 'running',
-      enable  => 'true',
+      enable  => true,
     }
   }
   # hacky vhost
