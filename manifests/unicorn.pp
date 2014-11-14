@@ -54,7 +54,7 @@ class puppet::unicorn () {
   if $selinux_config_mode == 'enforcing' {
     file{'get-SEL-policy':
       path    => '/usr/share/selinux/targeted/nginx.pp',
-      source  => 'puppet:///modules/puppet/nginx.pp',
+      source  => 'puppet:///modules/puppet/nginx.selmodule',
     } ->
     package {'policycoreutils':
       ensure  => 'latest',
