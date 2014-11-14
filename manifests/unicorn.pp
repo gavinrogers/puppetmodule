@@ -1,13 +1,24 @@
-# this class installs nginx with unicorn in front of puppetmaster
-# tested only on centos 7
+# Class: puppet::unicorn
+#
+# Parameters:
+# none
+#
+# Actions:
+# - Configures nginx and unicorn for puppet master use. Tested only on CentOS 7
+#
+# Requires:
+# - nginx
+#
+# Sample Usage:
+#   class {'puppet::unicorn':}
+#
+# written by Tim 'bastelfreak' Meusel
+# with big help from Rob 'rnelson0' Nelson
 
 class puppet::unicorn () {
   include nginx
   # install unicorn
-  package {'gcc':
-    ensure  => 'latest',
-  } ->
-  package {'ruby-devel':
+  package {['ruby-devel', 'gcc']:
     ensure  => 'latest',
   } ->
   package {['unicorn', 'rack']:
@@ -21,7 +32,6 @@ class puppet::unicorn () {
   file {'unicorn-conf':
     path    => '/etc/puppet/unicorn.conf',
     source  => 'puppet:///modules/puppet/unicorn.conf',
-    
   } ->
   file {'unicorn-service':
     path    => '/usr/lib/systemd/system/unicorn-puppetmaster.service',
@@ -32,11 +42,26 @@ class puppet::unicorn () {
     command     => '/usr/bin/systemctl daemon-reload',
     refreshonly => true,
     notify      => Service['unicorn-puppetmaster'],
-  } ->
+  } 
   unless defined(Service['unicorn-puppetmaster']) {
     service{'unicorn-puppetmaster':
       ensure  => 'running',
       enable  => true,
+      require => Exec['systemd-reload'],
+    }
+  }
+  # update SELinux
+  if $selinux_config_mode == 'enforcing' {
+    file{'get-SEL-policy':
+      path    => '/usr/share/selinux/targeted/nginx.pp',
+      source  => 'puppet:///modules/puppet/nginx.pp',
+    } ->
+    package {'policycoreutils':
+      ensure  => 'latest',
+    } ->
+    selmodule{'nginx':
+      ensure      => 'present',
+      syncversion => true,
     }
   }
   # hacky vhost
@@ -49,11 +74,12 @@ class puppet::unicorn () {
     path    => '/etc/nginx/sites-enabled/puppetmaster',
     target  => '/etc/nginx/sites-available/puppetmaster',
     notify  => Service['nginx'],
-  } ->
+  }
   unless defined(Service['nginx']) {
     service{'nginx':
       ensure  => 'running',
       enable  => true,
+      require => File['enable-puppetmaster-vhost'],
     }
   }
 }
