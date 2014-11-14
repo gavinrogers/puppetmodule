@@ -42,7 +42,7 @@ class puppet::unicorn () {
     command     => '/usr/bin/systemctl daemon-reload',
     refreshonly => true,
     notify      => Service['unicorn-puppetmaster'],
-  } 
+  }
   unless defined(Service['unicorn-puppetmaster']) {
     service{'unicorn-puppetmaster':
       ensure  => 'running',
@@ -51,7 +51,7 @@ class puppet::unicorn () {
     }
   }
   # update SELinux
-  if $selinux_config_mode == 'enforcing' {
+  if $::selinux_config_mode == 'enforcing' {
     file{'get-SEL-policy':
       path    => '/usr/share/selinux/targeted/nginx.pp',
       source  => 'puppet:///modules/puppet/nginx.selmodule',
