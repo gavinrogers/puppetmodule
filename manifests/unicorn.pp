@@ -18,12 +18,16 @@
 class puppet::unicorn () {
   include nginx
   # install unicorn
-  package {['ruby-devel', 'gcc']:
-    ensure  => 'latest',
-  } ->
+  $packages = ['ruby-devel', 'gcc']
+  unless defined(Package[$packages]) {
+    package {$packages:
+      ensure  => 'latest',
+    }
+  }
   package {['unicorn', 'rack']:
     ensure    => 'latest',
     provider  => 'gem',
+    require   => Package[$packages],
   } ->
   file {'copy-config':
     path    => '/etc/puppet/config.ru',
