@@ -20,7 +20,7 @@ server {
   proxy_set_header    X-Client-DN     $ssl_client_s_dn;
   proxy_set_header    X-SSL-Subject   $ssl_client_s_dn;
   proxy_set_header    X-SSL-Issuer    $ssl_client_i_dn;
-  listen *:8140 ssl;
+  listen <%= @listen_address %>:8140 ssl;
   root /var/empty;
   location / { 
     proxy_pass http://puppetmaster_unicorn;

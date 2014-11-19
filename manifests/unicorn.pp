@@ -1,7 +1,7 @@
 # Class: puppet::unicorn
 #
 # Parameters:
-# none
+# - listen_address - IP for binding the nginx
 #
 # Actions:
 # - Configures nginx and unicorn for puppet master use. Tested only on CentOS 7
@@ -10,20 +10,30 @@
 # - nginx
 #
 # Sample Usage:
-#   class {'puppet::unicorn':}
+#   class {'puppet::unicorn':
+#     listen_address => '10.250.250.1',
+#   }
 #
 # written by Tim 'bastelfreak' Meusel
 # with big help from Rob 'rnelson0' Nelson
 
-class puppet::unicorn () {
+class puppet::unicorn (
+  $listen_address,
+){
   include nginx
   # install unicorn
-  package {['ruby-devel', 'gcc']:
+  unless defined(Package['ruby-devel']) {
+    package {'ruby-devel':
+      ensure  => 'latest',
+    }
+  }
+  package {'gcc':
     ensure  => 'latest',
   } ->
   package {['unicorn', 'rack']:
     ensure    => 'latest',
     provider  => 'gem',
+    require   => Package['ruby-devel'],
   } ->
   file {'copy-config':
     path    => '/etc/puppet/config.ru',
