@@ -18,7 +18,7 @@
 # with big help from Rob 'rnelson0' Nelson
 
 class puppet::unicorn (
-  $listen_address = '*',
+  $listen_address,
 ){
   include nginx
   # install unicorn
