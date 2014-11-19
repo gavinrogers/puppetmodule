@@ -32,7 +32,8 @@
 #  ['puppetdb_startup_timeout'] - The timeout for puppetdb
 #  ['dns_alt_names']            - Comma separated list of alternative DNS names
 #  ['digest_algorithm']         - The algorithm to use for file digests.
-#  ['webserver']                - install 'nginx' (with unicorn) or 'httpd' (with passenger)
+#  ['webserver']                - install 'nginx' (with unicorn) or 'httpd' (with passenger) - httpd is default
+#  ['listen_address']           - IP for binding the webserver, defaults to *
 #
 # Requires:
 #
@@ -84,7 +85,8 @@ class puppet::master (
   $puppetdb_strict_validation = $::puppet::params::puppetdb_strict_validation,
   $dns_alt_names              = ['puppet'],
   $digest_algorithm           = $::puppet::params::digest_algorithm,
-  $webserver                  = 'httpd',
+  $webserver                  = $::puppet::params::default_webserver,
+  $listen_address             = $::puppet::params::listen_address,
 ) inherits puppet::params {
 
   anchor { 'puppet::master::begin': }
@@ -123,7 +125,9 @@ class puppet::master (
   case $webserver {
     nginx: {
       Anchor['puppet::master::begin'] ->
-      class {'puppet::unicorn':} ->
+      class {'puppet::unicorn':
+        listen_address  => $listen_address,
+      } ->
       Anchor['puppet::master::end']
     }
     default: {
