@@ -1,7 +1,8 @@
 # Class: puppet::unicorn
 #
 # Parameters:
-# - listen_address - IP for binding the nginx
+#  ['listen_address']     - IP for binding the nginx
+#  ['puppet_proxy_port']  - The port for the virtual host
 #
 # Actions:
 # - Configures nginx and unicorn for puppet master use. Tested only on CentOS 7
@@ -11,7 +12,8 @@
 #
 # Sample Usage:
 #   class {'puppet::unicorn':
-#     listen_address => '10.250.250.1',
+#     listen_address    => '10.250.250.1',
+#     puppet_proxy_port => '8140',
 #   }
 #
 # written by Tim 'bastelfreak' Meusel
@@ -19,6 +21,7 @@
 
 class puppet::unicorn (
   $listen_address,
+  $puppet_proxy_port,
 ){
   include nginx
   # install unicorn

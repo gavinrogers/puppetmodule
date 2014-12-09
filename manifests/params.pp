@@ -23,7 +23,7 @@ class puppet::params {
   $manifest                         = '/etc/puppet/manifests/site.pp'
   $hiera_config                     = '/etc/puppet/hiera.yaml'
   $puppet_docroot                   = '/etc/puppet/rack/public/'
-  $puppet_passenger_port            = '8140'
+  $puppet_proxy_port                = '8140'
   $puppet_server_port               = '8140'
   $puppet_agent_enabled             = true
   $apache_serveradmin               = 'root'

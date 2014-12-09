@@ -22,7 +22,7 @@
 #  ['puppet_ssldir']            - Puppet sll directory
 #  ['puppet_docroot']           - Doc root to be configured in apache vhost
 #  ['puppet_vardir']            - Vardir used by puppet
-#  ['puppet_passenger_port']    - Port to configure passenger on default 8140
+#  ['puppet_proxy_port']        - Port to configure the proxy on - default 8140
 #  ['puppet_master_package']    - Puppet master package
 #  ['puppet_master_service']    - Puppet master service
 #  ['version']                  - Version of the puppet master package to install
@@ -74,7 +74,7 @@ class puppet::master (
   $puppet_ssldir              = $::puppet::params::puppet_ssldir,
   $puppet_docroot             = $::puppet::params::puppet_docroot,
   $puppet_vardir              = $::puppet::params::puppet_vardir,
-  $puppet_passenger_port      = $::puppet::params::puppet_passenger_port,
+  $puppet_proxy_port          = $::puppet::params::puppet_proy_port,
   $puppet_master_package      = $::puppet::params::puppet_master_package,
   $puppet_master_service      = $::puppet::params::puppet_master_service,
   $version                    = 'present',
@@ -126,21 +126,22 @@ class puppet::master (
     nginx: {
       Anchor['puppet::master::begin'] ->
       class {'puppet::unicorn':
-        listen_address  => $listen_address,
+        listen_address    => $listen_address,
+        puppet_proxy_port => $puppet_proxy_port,
       } ->
       Anchor['puppet::master::end']
     }
     default: {
       Anchor['puppet::master::begin'] ->
       class {'puppet::passenger':
-        puppet_passenger_port  => $puppet_passenger_port,
-        puppet_docroot         => $puppet_docroot,
-        apache_serveradmin     => $apache_serveradmin,
-        puppet_conf            => $::puppet::params::puppet_conf,
-        puppet_ssldir          => $puppet_ssldir,
-        certname               => $certname,
-        conf_dir               => $::puppet::params::confdir,
-        dns_alt_names          => join($dns_alt_names,','),
+        puppet_proxy_port   => $puppet_proxy_port,
+        puppet_docroot      => $puppet_docroot,
+        apache_serveradmin  => $apache_serveradmin,
+        puppet_conf         => $::puppet::params::puppet_conf,
+        puppet_ssldir       => $puppet_ssldir,
+        certname            => $certname,
+        conf_dir            => $::puppet::params::confdir,
+        dns_alt_names       => join($dns_alt_names,','),
       } ->
       Anchor['puppet::master::end']
     }
