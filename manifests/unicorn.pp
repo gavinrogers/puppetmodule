@@ -55,7 +55,7 @@ class puppet::unicorn (
     command     => '/usr/bin/systemctl daemon-reload',
     refreshonly => true,
     notify      => Service['unicorn-puppetmaster'],
-  } ->
+  }
   unless defined(Service['unicorn-puppetmaster']) {
     service{'unicorn-puppetmaster':
       ensure  => 'running',
@@ -87,7 +87,7 @@ class puppet::unicorn (
     path    => '/etc/nginx/sites-enabled/puppetmaster',
     target  => '/etc/nginx/sites-available/puppetmaster',
     notify  => Service['nginx'],
-  } ->
+  }
   unless defined(Service['nginx']) {
     service{'nginx':
       ensure  => 'running',
