@@ -74,7 +74,7 @@ class puppet::master (
   $puppet_ssldir              = $::puppet::params::puppet_ssldir,
   $puppet_docroot             = $::puppet::params::puppet_docroot,
   $puppet_vardir              = $::puppet::params::puppet_vardir,
-  $puppet_proxy_port          = $::puppet::params::puppet_proy_port,
+  $puppet_proxy_port          = $::puppet::params::puppet_proxy_port,
   $puppet_master_package      = $::puppet::params::puppet_master_package,
   $puppet_master_service      = $::puppet::params::puppet_master_service,
   $version                    = 'present',

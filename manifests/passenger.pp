@@ -21,7 +21,7 @@
 #
 # Sample Usage:
 #   class { 'puppet::passenger':
-#           puppet_proxyr_port  => 8140,
+#           puppet_proxy_port   => 8140,
 #           puppet_docroot      => '/etc/puppet/docroot',
 #           apache_serveradmin  => 'wibble',
 #           puppet_conf         => '/etc/puppet/puppet.conf',
