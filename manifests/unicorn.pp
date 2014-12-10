@@ -65,12 +65,24 @@ class puppet::unicorn (
   }
   # update SELinux
   if $::selinux_config_mode == 'enforcing' {
-    file{'get-SEL-policy':
-      path    => '/usr/share/selinux/targeted/nginx.pp',
-      source  => 'puppet:///modules/puppet/nginx.selmodule',
-    } ->
     package {'policycoreutils':
       ensure  => 'latest',
+    } ->
+    file { 'selinux template':
+      path    =>  '/tmp/nginx.te',
+      ensure  =>  file,
+      content =>  template('puppet/unicorn_selinux_template'),
+    } ->
+    exec { 'building selinux module from template':
+      path    => [ "/usr/bin", "/usr/local/bin" ],
+      command => 'checkmodule -M -m -o /tmp/nginx.mod /tmp/nginx.te'
+    } ->
+    exec { 'building selinux policy package from module':
+      path    => [ "/usr/bin", "/usr/local/bin" ],
+      command => 'semodule_package -o /tmp/nginx.pp -m /tmp/nginx.mod',
+    } ->
+    file { "/usr/share/selinux/targeted/nginx.pp":
+      source => '/tmp/nginx.pp',
     } ->
     selmodule{'nginx':
       ensure      => 'present',
