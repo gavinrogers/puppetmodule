@@ -1,12 +1,15 @@
-module nginx 1.0;
+module nginx 1.1;
   require {
   type httpd_t;
   type puppet_var_run_t;
+  type init_t;
   class process setrlimit;
   class sock_file write;
   class dir search;
+  class unix_stream_socket connectto;
 }
 
 #============= httpd_t ==============
 allow httpd_t puppet_var_run_t:sock_file write;
 allow httpd_t puppet_var_run_t:dir search;
+allow httpd_t init_t:unix_stream_socket connectto;
