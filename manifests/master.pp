@@ -36,6 +36,7 @@
 #  ['listen_address']           - IP for binding the webserver, defaults to *
 #  ['disable_ssl']              - Disables SSL on the webserver. usefull if you use this master behind a loadbalancer. currently only supported by nginx, defaults to undef
 #  ['backup_upstream']          - specify another puppet master as fallback. currently only supported by nginx
+#  ['unicorn_package']          - package name of a unicorn rpm. if provided we install it, otherwise we built it via gem/gcc
 #  ['unicorn_path']             - custom path to the unicorn binary
 #
 # Requires:
@@ -93,6 +94,7 @@ class puppet::master (
   $disable_ssl                = $::puppet::params::disable_ssl,
   $backup_upstream            = $::puppet::params::backup_upstream,
   $unicorn_path               = $::puppet::params::unicorn_path,
+  $unicorn_package            = $::puppet::params::unicorn_package,
 ) inherits puppet::params {
 
   anchor { 'puppet::master::begin': }
