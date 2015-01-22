@@ -76,10 +76,12 @@ class puppet::unicorn (
       path    =>  '/tmp/nginx.te',
       ensure  =>  file,
       content =>  template('puppet/unicorn_selinux_template'),
+      notify  => Exec['building_selinux_module_from_template'],
     } ->
-    exec { 'building selinux module from template':
-      path    => [ "/usr/bin", "/usr/local/bin" ],
-      command => 'checkmodule -M -m -o /tmp/nginx.mod /tmp/nginx.te'
+    exec { 'building_selinux_module_from_template':
+      path        => [ "/usr/bin", "/usr/local/bin" ],
+      command     => 'checkmodule -M -m -o /tmp/nginx.mod /tmp/nginx.te',
+      refreshonly => true,
     } ->
     exec { 'building selinux policy package from module':
       path    => [ "/usr/bin", "/usr/local/bin" ],
