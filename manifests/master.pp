@@ -38,6 +38,7 @@
 #  ['backup_upstream']          - specify another puppet master as fallback. currently only supported by nginx
 #  ['unicorn_package']          - package name of a unicorn rpm. if provided we install it, otherwise we built it via gem/gcc
 #  ['unicorn_path']             - custom path to the unicorn binary
+#  ['generate_ssl_certs']       - Generate ssl certs (false to disable)
 #
 # Requires:
 #
@@ -78,7 +79,12 @@ class puppet::master (
   $puppet_ssldir              = $::puppet::params::puppet_ssldir,
   $puppet_docroot             = $::puppet::params::puppet_docroot,
   $puppet_vardir              = $::puppet::params::puppet_vardir,
+<<<<<<< HEAD
   $puppet_proxy_port          = $::puppet::params::puppet_proxy_port,
+=======
+  $puppet_passenger_port      = $::puppet::params::puppet_passenger_port,
+  $puppet_passenger_tempdir   = false,
+>>>>>>> fc66d308fddf8bc4cb351e5e5bdf540d432c2aaf
   $puppet_master_package      = $::puppet::params::puppet_master_package,
   $puppet_master_service      = $::puppet::params::puppet_master_service,
   $version                    = 'present',
@@ -89,12 +95,17 @@ class puppet::master (
   $puppetdb_strict_validation = $::puppet::params::puppetdb_strict_validation,
   $dns_alt_names              = ['puppet'],
   $digest_algorithm           = $::puppet::params::digest_algorithm,
+<<<<<<< HEAD
   $webserver                  = $::puppet::params::default_webserver,
   $listen_address             = $::puppet::params::listen_address,
   $disable_ssl                = $::puppet::params::disable_ssl,
   $backup_upstream            = $::puppet::params::backup_upstream,
   $unicorn_path               = $::puppet::params::unicorn_path,
   $unicorn_package            = $::puppet::params::unicorn_package,
+=======
+  $generate_ssl_certs         = true,
+  $puppetdb_version           = 'present',
+>>>>>>> fc66d308fddf8bc4cb351e5e5bdf540d432c2aaf
 ) inherits puppet::params {
 
   anchor { 'puppet::master::begin': }
@@ -146,23 +157,25 @@ class puppet::master (
     default: {
       Anchor['puppet::master::begin'] ->
       class {'puppet::passenger':
-        puppet_proxy_port   => $puppet_proxy_port,
-        puppet_docroot      => $puppet_docroot,
-        apache_serveradmin  => $apache_serveradmin,
-        puppet_conf         => $::puppet::params::puppet_conf,
-        puppet_ssldir       => $puppet_ssldir,
-        certname            => $certname,
-        conf_dir            => $::puppet::params::confdir,
-        dns_alt_names       => join($dns_alt_names,','),
+      puppet_proxy_port         => $puppet_passenger_port,
+      puppet_docroot            => $puppet_docroot,
+      apache_serveradmin        => $apache_serveradmin,
+      puppet_conf               => $::puppet::params::puppet_conf,
+      puppet_ssldir             => $puppet_ssldir,
+      certname                  => $certname,
+      conf_dir                  => $::puppet::params::confdir,
+      dns_alt_names             => join($dns_alt_names,','),
+      generate_ssl_certs        => $generate_ssl_certs,
+      puppet_passenger_tempdir  => $puppet_passenger_tempdir,
       } ->
       Anchor['puppet::master::end']
     }
 
   }
   service { $puppet_master_service:
-    ensure    => stopped,
-    enable    => false,
-    require   => File[$::puppet::params::puppet_conf],
+    ensure  => stopped,
+    enable  => false,
+    require => File[$::puppet::params::puppet_conf],
   }
 
   if ! defined(File[$::puppet::params::puppet_conf]){
@@ -212,11 +225,12 @@ class puppet::master (
       dbserver                   => $storeconfigs_dbserver,
       dbport                     => $storeconfigs_dbport,
       puppet_service             => Service[$webserver],
-      puppet_confdir             => $::puppet::params::puppet_confdir,
+      puppet_confdir             => $::puppet::params::confdir,
       puppet_conf                => $::puppet::params::puppet_conf,
       puppet_master_package      => $puppet_master_package,
       puppetdb_startup_timeout   => $puppetdb_startup_timeout,
       puppetdb_strict_validation => $puppetdb_strict_validation,
+      puppetdb_version           => $puppetdb_version,
     } ->
     Anchor['puppet::master::end']
   }

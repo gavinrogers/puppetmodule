@@ -4,6 +4,7 @@
 #
 # Parameters:
 #   ['puppet_proxy_port']    - The port for the virtual host
+#   ['generate_ssl_certs']       - Generate ssl certs (false to disable)
 #   ['puppet_docroot']           - Apache documnet root
 #   ['apache_serveradmin']       - The apache server admin
 #   ['puppet_conf']              - The puppet config dir
@@ -32,6 +33,8 @@
 #
 class puppet::passenger(
   $puppet_proxy_port,
+  $generate_ssl_certs = true,
+  $puppet_passenger_tempdir = false,
   $puppet_docroot,
   $apache_serveradmin,
   $puppet_conf,
@@ -46,18 +49,18 @@ class puppet::passenger(
   include apache::mod::ssl
 
   if $::osfamily == 'redhat' {
-    file{'/var/lib/puppet/reports':
+    file { '/var/lib/puppet/reports':
       ensure => directory,
       owner  => $::puppet::params::puppet_user,
       group  => $::puppet::params::puppet_group,
-      mode   => '0750',
     }
+  }
 
+  if str2bool($generate_ssl_certs) == true {
     file{"${puppet_ssldir}/ca":
       ensure => directory,
       owner  => $::puppet::params::puppet_user,
       group  => $::puppet::params::puppet_group,
-      mode   => '0770',
       before => Exec['Certificate_Check'],
     }
 
@@ -65,30 +68,28 @@ class puppet::passenger(
       ensure => directory,
       owner  => $::puppet::params::puppet_user,
       group  => $::puppet::params::puppet_group,
-      mode   => '0750',
       before => Exec['Certificate_Check'],
     }
-  }
+    # first we need to generate the cert
+    # Clean the installed certs out ifrst
+    $crt_clean_cmd  = "puppet cert clean ${certname}"
+    # I would have preferred to use puppet cert generate, but it does not
+    # return the corret exit code on some versions of puppet
+    $crt_gen_cmd   = "puppet certificate --ca-location=local --dns_alt_names=${dns_alt_names} generate ${certname}"
+    # I am using the sign command here b/c AFAICT, the sign command for certificate
+    # does not work
+    $crt_sign_cmd  = "puppet cert sign --allow-dns-alt-names ${certname}"
+    # find is required to move the cert into the certs directory which is
+    # where it needs to be for puppetdb to find it
+    $cert_find_cmd = "puppet certificate --ca-location=local find ${certname}"
 
-  # first we need to generate the cert
-  # Clean the installed certs out ifrst
-  $crt_clean_cmd  = "puppet cert clean ${certname}"
-  # I would have preferred to use puppet cert generate, but it does not
-  # return the corret exit code on some versions of puppet
-  $crt_gen_cmd   = "puppet certificate --ca-location=local --dns_alt_names=$dns_alt_names generate ${certname}"
-  # I am using the sign command here b/c AFAICT, the sign command for certificate
-  # does not work
-  $crt_sign_cmd  = "puppet cert sign --allow-dns-alt-names ${certname}"
-  # find is required to move the cert into the certs directory which is
-  # where it needs to be for puppetdb to find it
-  $cert_find_cmd = "puppet certificate --ca-location=local find ${certname}"
-
-  exec { 'Certificate_Check':
-    command   => "${crt_clean_cmd} ; ${crt_gen_cmd} && ${crt_sign_cmd} && ${cert_find_cmd}",
-    unless    => "/bin/ls ${puppet_ssldir}/certs/${certname}.pem",
-    path      => '/usr/bin:/usr/local/bin',
-    logoutput => on_failure,
-    require   => File[$puppet_conf]
+    exec { 'Certificate_Check':
+      command   => "${crt_clean_cmd} ; ${crt_gen_cmd} && ${crt_sign_cmd} && ${cert_find_cmd}",
+      unless    => "/bin/ls ${puppet_ssldir}/certs/${certname}.pem",
+      path      => '/usr/bin:/usr/local/bin',
+      logoutput => on_failure,
+      require   => File[$puppet_conf]
+    }
   }
 
   file { $puppet_docroot:
@@ -100,24 +101,24 @@ class puppet::passenger(
 
   apache::vhost { "puppet-${certname}":
     port              => $puppet_proxy_port,
-    priority          => '40',
-    docroot           => $puppet_docroot,
-    serveradmin       => $apache_serveradmin,
-    servername        => $certname,
-    ssl               => true,
-    ssl_cert          => "${puppet_ssldir}/certs/${certname}.pem",
-    ssl_key           => "${puppet_ssldir}/private_keys/${certname}.pem",
-    ssl_chain         => "${puppet_ssldir}/ca/ca_crt.pem",
-    ssl_ca            => "${puppet_ssldir}/ca/ca_crt.pem",
-    ssl_crl           => "${puppet_ssldir}/ca/ca_crl.pem",
-    ssl_protocol      => 'ALL -SSLv2 -SSLv3',
-    ssl_cipher        => 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK',
+    priority             => '40',
+    docroot              => $puppet_docroot,
+    serveradmin          => $apache_serveradmin,
+    servername           => $certname,
+    ssl                  => true,
+    ssl_cert             => "${puppet_ssldir}/certs/${certname}.pem",
+    ssl_key              => "${puppet_ssldir}/private_keys/${certname}.pem",
+    ssl_chain            => "${puppet_ssldir}/ca/ca_crt.pem",
+    ssl_ca               => "${puppet_ssldir}/ca/ca_crt.pem",
+    ssl_crl              => "${puppet_ssldir}/ca/ca_crl.pem",
+    ssl_protocol         => 'ALL -SSLv2 -SSLv3',
+    ssl_cipher           => 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK',
     ssl_honorcipherorder => 'On',
-    ssl_verify_client => 'optional',
-    ssl_verify_depth  => '1',
-    ssl_options       => ['+StdEnvVars', '+ExportCertData'],
-    rack_base_uris    => '/',
-    directories       => [
+    ssl_verify_client    => 'optional',
+    ssl_verify_depth     => '1',
+    ssl_options          => ['+StdEnvVars', '+ExportCertData'],
+    rack_base_uris       => '/',
+    directories          => [
       {
         path => $puppet_docroot,
       },
@@ -126,7 +127,7 @@ class puppet::passenger(
         options => 'None',
       },
     ],
-    require         => [ File['/etc/puppet/rack/config.ru'], File[$puppet_conf] ],
+    require              => [ File['/etc/puppet/rack/config.ru'], File[$puppet_conf] ],
   }
 
   #Hack to add extra passenger configurations for puppetmaster

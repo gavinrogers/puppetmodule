@@ -27,14 +27,15 @@
 #   }
 #
 class puppet::storeconfigs(
-    $dbserver,
     $dbport,
-    $puppet_service,
+    $dbserver,
     $puppet_master_package,
+    $puppet_service,
     $puppetdb_startup_timeout,
     $puppetdb_strict_validation,
+    $puppetdb_version,
+    $puppet_conf    =  $::puppet::params::puppet_conf,
     $puppet_confdir =  $::puppet::params::confdir,
-    $puppet_conf    =  $::puppet::params::puppet_conf
 )inherits puppet::params {
 
   ##If we point at a puppetdb on this machine
@@ -57,6 +58,7 @@ class puppet::storeconfigs(
       puppetdb_startup_timeout => $puppetdb_startup_timeout,
       strict_validation        => $puppetdb_strict_validation,
       require                  => $require,
+      puppetdb_version         => $puppetdb_version,
     }
   }
 }

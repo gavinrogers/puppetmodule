@@ -10,6 +10,7 @@
 #   ['version']               - The version of the puppet agent to install
 #   ['puppet_run_style']      - The run style of the agent either 'service', 'cron', 'external' or 'manual'
 #   ['puppet_run_interval']   - The run interval of the puppet agent in minutes, default is 30 minutes
+#   ['puppet_run_command']    - The command that will be executed for puppet agent run
 #   ['user_id']               - The userid of the puppet user
 #   ['group_id']              - The groupid of the puppet group
 #   ['splay']                 - If splay should be enable defaults to false
@@ -48,6 +49,7 @@ class puppet::agent(
   $version                = 'present',
   $puppet_run_style       = 'service',
   $puppet_run_interval    = 30,
+  $puppet_run_command     = '/usr/bin/puppet agent --no-daemonize --onetime --logdest syslog > /dev/null 2>&1',
   $user_id                = undef,
   $group_id               = undef,
   $splay                  = false,
@@ -128,7 +130,7 @@ class puppet::agent(
       $time2  =  fqdn_rand($puppet_run_interval) + 30
 
       cron { 'puppet-client':
-        command => '/usr/bin/puppet agent --no-daemonize --onetime --logdest syslog > /dev/null 2>&1',
+        command => $puppet_run_command,
         user    => 'root',
         # run twice an hour, at a random minute in order not to collectively stress the puppetmaster
         hour    => '*',
@@ -237,9 +239,9 @@ class puppet::agent(
   }
 
   ini_setting {'puppetagentmaster':
-    ensure   => present,
-    setting  => 'server',
-    value    => $puppet_server,
+    ensure  => present,
+    setting => 'server',
+    value   => $puppet_server,
   }
 
   ini_setting {'puppetagentuse_srv_records':
