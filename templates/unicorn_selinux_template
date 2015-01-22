@@ -1,4 +1,4 @@
-module nginx 1.1;
+module nginx 1.2;
   require {
   type httpd_t;
   type puppet_var_run_t;
@@ -9,6 +9,7 @@ module nginx 1.1;
   class unix_stream_socket connectto;
   <% if @backup_upstream %>
   type puppet_port_t;
+  type transproxy_port_t;
   class tcp_socket name_connect;
   class tcp_socket name_bind;
   <% end %>
