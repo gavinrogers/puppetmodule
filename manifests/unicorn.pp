@@ -81,7 +81,7 @@ class puppet::unicorn (
   }
   # update SELinux
   if $::selinux_config_mode == 'enforcing' {
-    package {['policycoreutils', 'checkpolicy']:
+    package {['policycoreutils', 'checkpolicy', 'policycoreutils-python']:
       ensure  => 'latest',
     } ->
     file {'selinux template':
