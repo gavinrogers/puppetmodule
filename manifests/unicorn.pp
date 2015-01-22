@@ -1,8 +1,10 @@
 # Class: puppet::unicorn
 #
 # Parameters:
-#  ['listen_address']     - IP for binding the nginx
+#  ['listen_address']     - IP for binding the webserver, defaults to *
 #  ['puppet_proxy_port']  - The port for the virtual host
+#  ['disable_ssl']        - Disables SSL on the webserver. usefull if you use this master behind a loadbalancer. currently only supported by nginx, defaults to undef
+#  ['backup_upstream']    - specify another puppet master as fallback. currently only supported by nginx
 #
 # Actions:
 # - Configures nginx and unicorn for puppet master use. Tested only on CentOS 7
