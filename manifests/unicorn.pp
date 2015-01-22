@@ -102,8 +102,8 @@ class puppet::unicorn (
       refreshonly => true,
     }
     file {'/usr/share/selinux/targeted/nginx.pp':
-      source => 'file:///tmp/nginx.pp',
-      require => Exec['building_selinux_policy_package_from_module'],
+      source      => 'file:///tmp/nginx.pp',
+      notify      => Exec['building_selinux_policy_package_from_module'],
     }
     selmodule {'nginx':
       ensure      => 'present',
