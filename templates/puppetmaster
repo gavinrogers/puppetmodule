@@ -1,7 +1,7 @@
 # define the new unicorn backend
 upstream puppetmaster_unicorn {
   server unix:/var/run/puppet/puppetmaster_unicorn.sock fail_timeout=5;
-  <% backup_upstream.each do |server| -%>
+  <% @backup_upstream.each do |server| -%>
   server <%= server %> backup;
   <% end -%>
 }
