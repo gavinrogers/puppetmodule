@@ -71,7 +71,7 @@ class puppet::unicorn (
     path    => '/usr/lib/systemd/system/unicorn-puppetmaster.service',
     source  => template('puppet/unicorn-puppetmaster.service'),
     notify  => Exec['systemd-reload'],
-  } ->
+  }
   unless defined(Service['unicorn-puppetmaster']) {
     service{'unicorn-puppetmaster':
       ensure  => 'running',
