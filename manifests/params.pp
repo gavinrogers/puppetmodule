@@ -34,7 +34,9 @@ class puppet::params {
   $listen_address                   = '*'
   $default_webserver                = 'httpd'
   $disable_ssl                      = undef
-  $backup_upstream                  = undef
+  $backup_upstream                  = []
+  $unicorn_package                  = undef
+  $unicorn_path                     = '/usr/local/bin/unicorn'
 
   # Only used when environments == directory
   $environmentpath                  = '$confdir/environments'
