@@ -34,6 +34,8 @@
 #  ['digest_algorithm']         - The algorithm to use for file digests.
 #  ['webserver']                - install 'nginx' (with unicorn) or 'httpd' (with passenger) - httpd is default
 #  ['listen_address']           - IP for binding the webserver, defaults to *
+#  ['disable_ssl']              - Disables SSL on the webserver. usefull if you use this master behind a loadbalancer. currently only supported by nginx, defaults to undef
+#  ['backup_upstream']          - specify another puppet master as fallback. currently only supported by nginx
 #
 # Requires:
 #
@@ -87,6 +89,8 @@ class puppet::master (
   $digest_algorithm           = $::puppet::params::digest_algorithm,
   $webserver                  = $::puppet::params::default_webserver,
   $listen_address             = $::puppet::params::listen_address,
+  $disable_ssl                = $::puppet::params::disable_ssl,
+  $backup_upstream            = $::puppet::params::backup_upstream,
 ) inherits puppet::params {
 
   anchor { 'puppet::master::begin': }
@@ -128,6 +132,8 @@ class puppet::master (
       class {'puppet::unicorn':
         listen_address    => $listen_address,
         puppet_proxy_port => $puppet_proxy_port,
+        disable_ssl       => $disable_ssl,
+        backup_upstream   => $backup_upstream,
       } ->
       Anchor['puppet::master::end']
     }

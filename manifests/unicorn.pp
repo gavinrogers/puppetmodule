@@ -22,6 +22,8 @@
 class puppet::unicorn (
   $listen_address,
   $puppet_proxy_port,
+  $disable_ssl,
+  $backup_upstream,
 ){
   include nginx
   # install unicorn

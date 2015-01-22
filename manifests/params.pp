@@ -33,6 +33,8 @@ class puppet::params {
   $digest_algorithm                 = 'md5'
   $listen_address                   = '*'
   $default_webserver                = 'httpd'
+  $disable_ssl                      = undef
+  $backup_upstream                  = undef
 
   # Only used when environments == directory
   $environmentpath                  = '$confdir/environments'
