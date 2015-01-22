@@ -19,7 +19,7 @@
 #   }
 #
 # written by Tim 'bastelfreak' Meusel
-# with big help from Rob 'rnelson0' Nelson
+# with big help from Rob 'rnelson0' Nelson and the_scourge
 
 class puppet::unicorn (
   $listen_address,
