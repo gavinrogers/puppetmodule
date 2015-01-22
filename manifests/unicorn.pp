@@ -62,15 +62,16 @@ class puppet::unicorn (
     path    => '/etc/puppet/config.ru',
     source  => '/usr/share/puppet/ext/rack/config.ru',
   } ->
-  exec{'systemd-reload':
-    command     => '/usr/bin/systemctl daemon-reload',
-    refreshonly => true,
-    notify      => Service['unicorn-puppetmaster'],
-  } ->
+
   file {'unicorn-service':
     path    => '/usr/lib/systemd/system/unicorn-puppetmaster.service',
     content => template('puppet/unicorn-puppetmaster.service'),
     notify  => Exec['systemd-reload'],
+  } ->
+  exec{'systemd-reload':
+    command     => '/usr/bin/systemctl daemon-reload',
+    refreshonly => true,
+    notify      => Service['unicorn-puppetmaster'],
   }
   unless defined(Service['unicorn-puppetmaster']) {
     service{'unicorn-puppetmaster':
