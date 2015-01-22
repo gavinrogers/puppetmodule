@@ -72,27 +72,31 @@ class puppet::unicorn (
     package {['policycoreutils', 'checkpolicy']:
       ensure  => 'latest',
     } ->
-    file { 'selinux template':
+    file {'selinux template':
       path    =>  '/tmp/nginx.te',
       ensure  =>  file,
       content =>  template('puppet/unicorn_selinux_template'),
       notify  => Exec['building_selinux_module_from_template'],
-    } ->
-    exec { 'building_selinux_module_from_template':
+    }
+    exec {'building_selinux_module_from_template':
       path        => [ "/usr/bin", "/usr/local/bin" ],
       command     => 'checkmodule -M -m -o /tmp/nginx.mod /tmp/nginx.te',
       refreshonly => true,
-    } ->
-    exec { 'building selinux policy package from module':
-      path    => [ "/usr/bin", "/usr/local/bin" ],
-      command => 'semodule_package -o /tmp/nginx.pp -m /tmp/nginx.mod',
-    } ->
-    file { "/usr/share/selinux/targeted/nginx.pp":
+      notify      => Exec['building_selinux_policy_package_from_module'],
+    }
+    exec {'building_selinux_policy_package_from_module':
+      path        => [ "/usr/bin", "/usr/local/bin" ],
+      command     => 'semodule_package -o /tmp/nginx.pp -m /tmp/nginx.mod',
+      refreshonly => true,
+    }
+    file {'/usr/share/selinux/targeted/nginx.pp':
       source => '/tmp/nginx.pp',
-    } ->
-    selmodule{'nginx':
+      require => Exec['building_selinux_policy_package_from_module'],
+    }
+    selmodule {'nginx':
       ensure      => 'present',
       syncversion => true,
+      require     => File['/usr/share/selinux/targeted/nginx.pp'],
     }
   }
   # hacky vhost
