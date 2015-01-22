@@ -81,7 +81,7 @@ class puppet::unicorn (
   }
   # update SELinux
   if $::selinux_config_mode == 'enforcing' {
-    package {['policycoreutils', 'checkpolicy']:
+    package {['policycoreutils', 'checkpolicy', 'policycoreutils-python']:
       ensure  => 'latest',
     } ->
     file {'selinux template':
@@ -102,7 +102,7 @@ class puppet::unicorn (
       refreshonly => true,
     }
     file {'/usr/share/selinux/targeted/nginx.pp':
-      source => '/tmp/nginx.pp',
+      source => 'file:///tmp/nginx.pp',
       require => Exec['building_selinux_policy_package_from_module'],
     }
     selmodule {'nginx':
