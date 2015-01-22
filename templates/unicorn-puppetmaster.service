@@ -2,7 +2,7 @@
 Description=Puppet master served by Unicorn
 
 [Service]
-ExecStart=<% @unicorn_path %> -c /etc/puppet/unicorn.conf
+ExecStart=<%= @unicorn_path %> -c /etc/puppet/unicorn.conf
 ExecReload=/usr/bin/kill -s HUP $MAINPID
 PrivateTmp=yes
 # this would be cool, but then the puppetmaster can't reach the puppetdb
