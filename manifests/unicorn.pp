@@ -5,6 +5,8 @@
 #  ['puppet_proxy_port']  - The port for the virtual host
 #  ['disable_ssl']        - Disables SSL on the webserver. usefull if you use this master behind a loadbalancer. currently only supported by nginx, defaults to undef
 #  ['backup_upstream']    - specify another puppet master as fallback. currently only supported by nginx
+#  ['unicorn_package']    - package name of a unicorn rpm. if provided we install it, otherwise we built it via gem/gcc
+#  ['unicorn_path']       - custom path to the unicorn binary
 #
 # Actions:
 # - Configures nginx and unicorn for puppet master use. Tested only on CentOS 7
@@ -26,45 +28,54 @@ class puppet::unicorn (
   $puppet_proxy_port,
   $disable_ssl,
   $backup_upstream,
+  $unicorn_package,
+  $unicorn_path,
 ){
   include nginx
-  # install unicorn
-  unless defined(Package['ruby-devel']) {
-    package {'ruby-devel':
+
+  # if this is provided we install the package from the repo, otherwise we build unicorn from scratch
+  if $unicorn_package {
+    package {$unicorn_package:
       ensure  => 'latest',
     }
+  } else {
+    # install unicorn
+    unless defined(Package['ruby-devel']) {
+      package {'ruby-devel':
+        ensure  => 'latest',
+      }
+    }
+    package {'gcc':
+      ensure  => 'latest',
+    } ->
+    package {['unicorn', 'rack']:
+      ensure    => 'latest',
+      provider  => 'gem',
+      require   => Package['ruby-devel'],
+    }
   }
-  package {'gcc':
-    ensure  => 'latest',
-  } ->
-  package {['unicorn', 'rack']:
-    ensure    => 'latest',
-    provider  => 'gem',
-    require   => Package['ruby-devel'],
+  file {'unicorn-conf':
+    path    => '/etc/puppet/unicorn.conf',
+    source  => 'puppet:///modules/puppet/unicorn.conf',
   } ->
   file {'copy-config':
     path    => '/etc/puppet/config.ru',
     source  => '/usr/share/puppet/ext/rack/config.ru',
   } ->
-  file {'unicorn-conf':
-    path    => '/etc/puppet/unicorn.conf',
-    source  => 'puppet:///modules/puppet/unicorn.conf',
-  } ->
-  file {'unicorn-service':
-    path    => '/usr/lib/systemd/system/unicorn-puppetmaster.service',
-    source  => 'puppet:///modules/puppet/unicorn-puppetmaster.service',
-    notify  => Exec['systemd-reload'],
-  } ->
   exec{'systemd-reload':
     command     => '/usr/bin/systemctl daemon-reload',
     refreshonly => true,
     notify      => Service['unicorn-puppetmaster'],
-  }
+  } ->
+  file {'unicorn-service':
+    path    => '/usr/lib/systemd/system/unicorn-puppetmaster.service',
+    source  => template('puppet/unicorn-puppetmaster.service'),
+    notify  => Exec['systemd-reload'],
+  } ->
   unless defined(Service['unicorn-puppetmaster']) {
     service{'unicorn-puppetmaster':
       ensure  => 'running',
       enable  => true,
-      require => Exec['systemd-reload'],
     }
   }
   # update SELinux
