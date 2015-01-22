@@ -34,7 +34,7 @@ class puppet::unicorn (
       ensure  => 'latest',
     }
   }
-  package {'gcc':
+  package { [ 'policycoreutils-python', 'gcc' ]:
     ensure  => 'latest',
   } ->
   package {['unicorn', 'rack']:
@@ -90,7 +90,7 @@ class puppet::unicorn (
       refreshonly => true,
     }
     file {'/usr/share/selinux/targeted/nginx.pp':
-      source => '/tmp/nginx.pp',
+      source => 'file:///tmp/nginx.pp',
       require => Exec['building_selinux_policy_package_from_module'],
     }
     selmodule {'nginx':
