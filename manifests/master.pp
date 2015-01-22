@@ -136,6 +136,7 @@ class puppet::master (
         puppet_proxy_port => $puppet_proxy_port,
         disable_ssl       => $disable_ssl,
         backup_upstream   => $backup_upstream,
+        unicorn_path      => $unicorn_path,
       } ->
       Anchor['puppet::master::end']
     }
