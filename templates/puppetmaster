@@ -9,7 +9,8 @@ upstream puppetmaster_unicorn {
 # define our proxy for breaking up SSL
 server {
   <% unless @disable_ssl -%>
-  ssl on; 
+  ssl on;
+  listen <%= @listen_address %>:<%= @puppet_proxy_port %> ssl;
   ssl_certificate /var/lib/puppet/ssl/certs/<%= @fqdn %>.pem;
   ssl_certificate_key /var/lib/puppet/ssl/private_keys/<%= @fqdn %>.pem;
   ssl_verify_client optional;
@@ -24,8 +25,9 @@ server {
   proxy_set_header    X-Client-DN     $ssl_client_s_dn;
   proxy_set_header    X-SSL-Subject   $ssl_client_s_dn;
   proxy_set_header    X-SSL-Issuer    $ssl_client_i_dn;
+  <% else -%>
+  listen <%= @listen_address %>:<%= @puppet_proxy_port %>;
   <% end -%>
-  listen <%= @listen_address %>:<%= @puppet_proxy_port %> ssl;
   root /var/empty;
   location / { 
     proxy_pass http://puppetmaster_unicorn;
