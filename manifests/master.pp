@@ -79,12 +79,8 @@ class puppet::master (
   $puppet_ssldir              = $::puppet::params::puppet_ssldir,
   $puppet_docroot             = $::puppet::params::puppet_docroot,
   $puppet_vardir              = $::puppet::params::puppet_vardir,
-<<<<<<< HEAD
   $puppet_proxy_port          = $::puppet::params::puppet_proxy_port,
-=======
-  $puppet_passenger_port      = $::puppet::params::puppet_passenger_port,
   $puppet_passenger_tempdir   = false,
->>>>>>> fc66d308fddf8bc4cb351e5e5bdf540d432c2aaf
   $puppet_master_package      = $::puppet::params::puppet_master_package,
   $puppet_master_service      = $::puppet::params::puppet_master_service,
   $version                    = 'present',
@@ -95,17 +91,14 @@ class puppet::master (
   $puppetdb_strict_validation = $::puppet::params::puppetdb_strict_validation,
   $dns_alt_names              = ['puppet'],
   $digest_algorithm           = $::puppet::params::digest_algorithm,
-<<<<<<< HEAD
   $webserver                  = $::puppet::params::default_webserver,
   $listen_address             = $::puppet::params::listen_address,
   $disable_ssl                = $::puppet::params::disable_ssl,
   $backup_upstream            = $::puppet::params::backup_upstream,
   $unicorn_path               = $::puppet::params::unicorn_path,
   $unicorn_package            = $::puppet::params::unicorn_package,
-=======
   $generate_ssl_certs         = true,
   $puppetdb_version           = 'present',
->>>>>>> fc66d308fddf8bc4cb351e5e5bdf540d432c2aaf
 ) inherits puppet::params {
 
   anchor { 'puppet::master::begin': }
