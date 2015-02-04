@@ -24,6 +24,10 @@
 # with big help from Rob 'rnelson0' Nelson and the_scourge
 
 class puppet::unicorn (
+  $certname,
+  $puppet_conf,
+  $puppet_ssldir,
+  $dns_alt_names,
   $listen_address,
   $puppet_proxy_port,
   $disable_ssl,
@@ -81,36 +85,39 @@ class puppet::unicorn (
   }
   # update SELinux
   if $::selinux_config_mode == 'enforcing' {
-    package {['policycoreutils', 'checkpolicy', 'policycoreutils-python']:
-      ensure  => 'latest',
-    } ->
-    file {'selinux template':
-      path    =>  '/tmp/nginx.te',
-      ensure  =>  file,
+    class { selinux:
+      mode  => 'enforcing'
+    }
+    selinux::module{ 'nginx':
+      ensure  => 'present',
       content =>  template('puppet/unicorn_selinux_template'),
-      notify  => Exec['building_selinux_module_from_template'],
-    }
-    exec {'building_selinux_module_from_template':
-      path        => [ "/usr/bin", "/usr/local/bin" ],
-      command     => 'checkmodule -M -m -o /tmp/nginx.mod /tmp/nginx.te',
-      refreshonly => true,
-      notify      => Exec['building_selinux_policy_package_from_module'],
-    }
-    exec {'building_selinux_policy_package_from_module':
-      path        => [ "/usr/bin", "/usr/local/bin" ],
-      command     => 'semodule_package -o /tmp/nginx.pp -m /tmp/nginx.mod',
-      refreshonly => true,
-    }
-    file {'/usr/share/selinux/targeted/nginx.pp':
-      source      => 'file:///tmp/nginx.pp',
-      notify      => Exec['building_selinux_policy_package_from_module'],
-    }
-    selmodule {'nginx':
-      ensure      => 'present',
-      syncversion => true,
-      require     => File['/usr/share/selinux/targeted/nginx.pp'],
     }
   }
+
+  # first we need to generate the cert
+  # Clean the installed certs out ifrst
+  $crt_clean_cmd  = "puppet cert clean ${certname}"
+  # I would have preferred to use puppet cert generate, but it does not
+  # return the corret exit code on some versions of puppet
+  $crt_gen_cmd   = "puppet certificate --ca-location=local --dns_alt_names=$dns_alt_names generate ${certname}"
+  # I am using the sign command here b/c AFAICT, the sign command for certificate
+  # does not work
+  $crt_sign_cmd  = "puppet cert sign --allow-dns-alt-names ${certname}"
+  # find is required to move the cert into the certs directory which is
+  # where it needs to be for puppetdb to find it
+  $cert_find_cmd = "puppet certificate --ca-location=local find ${certname}"
+
+  exec { 'Certificate_Check':
+    command   => "${crt_clean_cmd} ; ${crt_gen_cmd} && ${crt_sign_cmd} && ${cert_find_cmd}",
+    unless    => "/bin/ls ${puppet_ssldir}/certs/${certname}.pem",
+    path      => '/usr/bin:/usr/local/bin',
+    logoutput => on_failure,
+    require   => File[$puppet_conf]
+  }
+
+
+
+
   # hacky vhost
   file {'puppetmaster-vhost':
     path    => '/etc/nginx/sites-available/puppetmaster',

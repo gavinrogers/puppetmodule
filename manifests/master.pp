@@ -134,6 +134,10 @@ class puppet::master (
     nginx: {
       Anchor['puppet::master::begin'] ->
       class {'puppet::unicorn':
+        certname          => $certname,
+        puppet_conf       => $puppet_conf,
+        puppet_ssldir     => $puppet_ssldir,
+        dns_alt_names     => $dns_alt_names,
         listen_address    => $listen_address,
         puppet_proxy_port => $puppet_proxy_port,
         disable_ssl       => $disable_ssl,
