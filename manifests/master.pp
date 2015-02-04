@@ -39,6 +39,7 @@
 #  ['unicorn_package']          - package name of a unicorn rpm. if provided we install it, otherwise we built it via gem/gcc
 #  ['unicorn_path']             - custom path to the unicorn binary
 #  ['generate_ssl_certs']       - Generate ssl certs (false to disable)
+#  ['strict_variables']         - Makes the parser raise errors when referencing unknown variables
 #
 # Requires:
 #
@@ -98,6 +99,7 @@ class puppet::master (
   $unicorn_path               = $::puppet::params::unicorn_path,
   $unicorn_package            = $::puppet::params::unicorn_package,
   $generate_ssl_certs         = true,
+  $strict_variables           = undef,
   $puppetdb_version           = 'present',
 ) inherits puppet::params {
 
@@ -139,7 +141,7 @@ class puppet::master (
       Anchor['puppet::master::begin'] ->
       class {'puppet::unicorn':
         certname          => $certname,
-        puppet_conf       => $puppet_conf,
+        puppet_conf       => $::puppet::params::puppet_conf,
         puppet_ssldir     => $puppet_ssldir,
         dns_alt_names     => $dns_alt_names,
         listen_address    => $listen_address,
@@ -154,7 +156,7 @@ class puppet::master (
     default: {
       Anchor['puppet::master::begin'] ->
       class {'puppet::passenger':
-      puppet_proxy_port         => $puppet_passenger_port,
+      puppet_proxy_port         => $::puppet::params::puppet_passenger_port,
       puppet_docroot            => $puppet_docroot,
       apache_serveradmin        => $apache_serveradmin,
       puppet_conf               => $::puppet::params::puppet_conf,
@@ -343,6 +345,15 @@ class puppet::master (
       ensure  => present,
       setting => 'digest_algorithm',
       value   => $digest_algorithm,
+  }
+
+  if $strict_variables != undef {
+    validate_bool(str2bool($strict_variables))
+    ini_setting {'puppetmasterstrictvariables':
+        ensure  => present,
+        setting => 'strict_variables',
+        value   => $strict_variables,
+    }
   }
 
   anchor { 'puppet::master::end': }

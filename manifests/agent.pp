@@ -42,30 +42,40 @@
 #   }
 #
 class puppet::agent(
-  $puppet_server          = $::puppet::params::puppet_server,
-  $puppet_server_port     = $::puppet::params::puppet_server_port,
   $puppet_agent_service   = $::puppet::params::puppet_agent_service,
   $puppet_agent_package   = $::puppet::params::puppet_agent_package,
   $version                = 'present',
   $puppet_run_style       = 'service',
-  $puppet_run_interval    = 30,
   $puppet_run_command     = '/usr/bin/puppet agent --no-daemonize --onetime --logdest syslog > /dev/null 2>&1',
   $user_id                = undef,
   $group_id               = undef,
-  $splay                  = false,
-  $environment            = 'production',
-  $report                 = true,
-  $pluginsync             = true,
-  $use_srv_records        = false,
+
+  #[main]
+  $templatedir            = undef,
+  $syslogfacility         = undef,
+  $priority               = undef,
+
+  #[agent]
   $srv_domain             = undef,
   $ordering               = undef,
-  $templatedir            = undef,
   $trusted_node_data      = undef,
+  $environment            = 'production',
+  $puppet_server          = $::puppet::params::puppet_server,
+  $use_srv_records        = false,
+  $puppet_run_interval    = 30,
+  $splay                  = false,
+  $puppet_server_port     = $::puppet::params::puppet_server_port,
+  $report                 = true,
+  $pluginsync             = true,
   $listen                 = false,
   $reportserver           = '$server',
   $digest_algorithm       = $::puppet::params::digest_algorithm,
   $configtimeout          = '2m',
   $stringify_facts        = undef,
+  $verbose                = undef,
+  $agent_noop             = undef,
+  $usecacheonfailure      = undef,
+  $certname               = undef,
 ) inherits puppet::params {
 
   if ! defined(User[$::puppet::params::puppet_user]) {
@@ -319,6 +329,50 @@ class puppet::agent(
       ensure  => present,
       setting => 'stringify_facts',
       value   => $stringify_facts,
+    }
+  }
+  if $verbose != undef {
+    ini_setting {'puppetagentverbose':
+      ensure  => present,
+      setting => 'verbose',
+      value   => $verbose,
+    }
+  }
+  if $agent_noop != undef {
+    ini_setting {'puppetagentnoop':
+      ensure  => present,
+      setting => 'noop',
+      value   => $agent_noop,
+    }
+  }
+  if $usecacheonfailure != undef {
+    ini_setting {'puppetagentusecacheonfailure':
+      ensure  => present,
+      setting => 'usecacheonfailure',
+      value   => $usecacheonfailure,
+    }
+  }
+  if $syslogfacility != undef {
+    ini_setting {'puppetagentsyslogfacility':
+      ensure  => present,
+      setting => 'syslogfacility',
+      value   => $syslogfacility,
+      section => 'main',
+    }
+  }
+  if $certname != undef {
+    ini_setting {'puppetagentcertname':
+      ensure  => present,
+      setting => 'certname',
+      value   => $certname,
+    }
+  }
+  if $priority != undef {
+    ini_setting {'puppetagentpriority':
+      ensure  => present,
+      setting => 'priority',
+      value   => $priority,
+      section => 'main',
     }
   }
 }

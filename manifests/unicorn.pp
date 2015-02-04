@@ -86,7 +86,7 @@ class puppet::unicorn (
   }
   # update SELinux
   if $::selinux_config_mode == 'enforcing' {
-    class { selinux:
+    class { 'selinux':
       mode  => 'enforcing'
     }
     selinux::module{ 'nginx':
