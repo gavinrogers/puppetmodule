@@ -13,6 +13,7 @@ as this module requires the passenger apache module.
 
 Requires the following modules from puppetforge: [stdlib](https://forge.puppetlabs.com/puppetlabs/stdlib), [apache](https://forge.puppetlabs.com/puppetlabs/apache), [concat](https://forge.puppetlabs.com/puppetlabs/concat), [inifile](https://forge.puppetlabs.com/puppetlabs/inifile)
 
+
 ## Usage Note ##
 
 If you are using this module to install a puppetmaster and serving the manifest of 
@@ -58,7 +59,7 @@ Optionally, an `environmentpath` parameter can be supplied to configure the base
       webserver => 'nginx'
     }
 
-The default installed webserver is httpd with passenger, but via the webserver param you can switch to nginx with unicorn (nginx is currently only tested on centos7, testers are welcome)
+The default installed webserver is httpd with passenger, but via the webserver param you can switch to nginx with unicorn (nginx is currently only tested on centos7, testers are welcome). Note that if you have selinux enabled, you must have [this](https://github.com/gavinrogers/puppet-selinux) selinux module installed.
 
 ## Agent ##
     class { 'puppet::agent':
