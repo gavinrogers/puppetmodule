@@ -18,7 +18,8 @@ describe 'puppet::storeconfigs', :type => :class do
                 :puppet_conf           => '/etc/puppet/puppet.conf',
                 :puppet_master_package => 'puppstmaster',
                 :puppetdb_startup_timeout => '60',
-                :puppetdb_strict_validation => true
+                :puppetdb_strict_validation => true,
+                :puppetdb_version => 'present'
             }
         end
 
@@ -44,7 +45,8 @@ describe 'puppet::storeconfigs', :type => :class do
                 :puppet_conf           => '/etc/puppet/puppet.conf',
                 :puppet_master_package => 'puppstmaster',
                 :puppetdb_startup_timeout => '60',
-                :puppetdb_strict_validation => true
+                :puppetdb_strict_validation => true,
+                :puppetdb_version => 'present'
             }
         end
 

@@ -61,3 +61,20 @@
 2014-10-10 Stephen Johnson <steve@thatbytes.co.uk> - 1.1.0
   * Add new templatedir paramter to agent
   * Add external_nodes and node_terminus <Jesi Major>
+2014-12-09 Stephen Johnson <steve@thatbytes.co.uk> - 1.2.0
+  * move cron command to class parameter <g.chernyshev>
+  * Use double-quotes to allow variable expansion in environmentpath <Robin Bowes>
+  * Allow passenger tempdir to be configurable <Robin Bowes>
+  * Fix for future parse <Tim Meusel>
+  * Fix sections settings for various configuration params <Benjamin Krein>
+  * templatedir is deprecated, so do not add by default <Michael Arnold>
+  * Let Puppet deal with setting it's own permissions <Michael Arnold>
+  * Added configtimeout setting to puppet::agent to allow override of this default setting <Jesi Major>
+  * Add new flag to make ssl cert generation optional <Robin Bowes>
+2014-12-31 Stephen Johnson <steve@thatbytes.co.uk> - 1.3.0
+  * missing @ in the variable <primeministerp>
+  * Remove RackAutoDetect and RailsAutoDetest <Stephen Johnson>
+  * Add acceptance tests for redhat <Stephen Johnson>
+  * Add new metadata file for puppetforge  <Stephen Johnson>
+2014-12-31 Stephen Johnson <steve@thatbytes.co.uk> - 1.3.1
+  * Cleanup some lint items <Stephen Johnson>

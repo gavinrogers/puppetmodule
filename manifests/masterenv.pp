@@ -32,6 +32,7 @@ define  puppet::masterenv (
       $section = ''
       file { "${environmentpath}/${name}":
         ensure => directory,
+        before => [Ini_setting["masterenvmodule${name}"],Ini_setting["masterenvmanifest${name}"]],
       }
     }
     default: {

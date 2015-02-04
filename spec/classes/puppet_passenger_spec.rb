@@ -43,6 +43,10 @@ describe 'puppet::passenger', :type => :class do
                     :group  => 'puppet',
                     :mode   => '0755'
                 )
+                should contain_file('puppet_passenger.conf').with(
+                    :ensure => 'file',
+                )
+                should contain_file('puppet_passenger.conf').without_content(/PassengerTempDir/)
                 should contain_file('/etc/puppet/rack').with(
                     :ensure => 'directory',
                     :owner  => 'puppet',
@@ -74,17 +78,43 @@ describe 'puppet::passenger', :type => :class do
         }
     end
     context 'on Redhat' do
-        let(:facts) do
-            {
-                :osfamily               => 'Redhat',
-                :operatingsystem        => 'Redhat',
-                :operatingsystemrelease => '5',
-                :concat_basedir         => '/dne',
-            }
-        end
-         it {
-                should contain_file('/var/lib/puppet/reports')
-                should contain_file('/var/lib/puppet/ssl/ca/requests')
+      let(:facts) do
+        {
+          :osfamily               => 'Redhat',
+          :operatingsystem        => 'Redhat',
+          :operatingsystemrelease => '5',
+          :concat_basedir         => '/dne',
         }
+      end
+      it {
+        should contain_file('/var/lib/puppet/reports')
+        should contain_file('/var/lib/puppet/ssl/ca/requests')
+      }
+    end
+    context 'on Redhat with tempdir' do
+      let(:facts) do
+        {
+          :osfamily               => 'Redhat',
+          :operatingsystem        => 'Redhat',
+          :operatingsystemrelease => '5',
+          :concat_basedir         => '/dne',
+        }
+      end
+      let (:params) do
+        {
+          :puppet_passenger_port    => '8140',
+          :puppet_docroot           => '/etc/puppet/rack/public/',
+          :apache_serveradmin       => 'root',
+          :puppet_conf              => '/etc/puppet/puppet.conf',
+          :puppet_ssldir            => '/var/lib/puppet/ssl',
+          :certname                 => 'test.test.com',
+          :conf_dir                 => '/etc/puppet',
+          :dns_alt_names            => ['puppet'],
+          :puppet_passenger_tempdir => '/tmp/passenger',
+        }
+      end
+      it {
+        should contain_file('puppet_passenger.conf').with_content(/PassengerTempDir/)
+      }
     end
 end

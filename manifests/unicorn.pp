@@ -35,8 +35,9 @@ class puppet::unicorn (
   $unicorn_package,
   $unicorn_path,
 ){
-  include nginx
-
+  class { '::nginx':
+    worker_processes  => $::processorcount,
+  }
   # if this is provided we install the package from the repo, otherwise we build unicorn from scratch
   if $unicorn_package {
     package {$unicorn_package:
